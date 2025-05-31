@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::{Serialize, Deserialize, Actionlike, ActionState};
+
 /// While this entity and relationship exists, it will disable any actions on the target entity.
 /// This will override a manually set [`ActionState::disabled`] on the target entity.
 #[derive(Component, Clone, Debug, PartialEq, Serialize, Deserialize, Reflect)]
@@ -32,8 +34,8 @@ pub struct ActionStateDisabledBy<A: Actionlike>(Vec<Entity>);
 /// This will override a manually set [`ActionState::disabled`] on the target entity.
 #[derive(Component, Clone, Debug, PartialEq, Serialize, Deserialize, Reflect)]
 #[reflect(Component)]
-#[relationship(relationship_target = ActionDisabledBy)]
-pub struct DisablingAction<A: Actionlike> {
+#[relationship(relationship_target = ActionsDisabledBy)]
+pub struct DisablingActions<A: Actionlike> {
     #[relationship]
     to_disable: Entity,
     actions_to_disable: Vec<A>,
@@ -44,9 +46,20 @@ pub struct DisablingAction<A: Actionlike> {
 #[derive(Component, Clone, Debug, PartialEq, Serialize, Deserialize, Reflect)]
 #[reflect(Component)]
 #[relationship_target(relationship = DisablingAction)]
-pub struct ActionDisabledBy<A: Actionlike> {
+pub struct ActionsDisabledBy<A: Actionlike> {
     disablers: Vec<Entity>,
 }
 pub fn setup_relationships<A: Actionlike>(world: &mut World) {
     world.register_component_hooks::<AllActionsDisabled>()
+}
+
+pub mod prelude {
+    pub use super::DisablingAllActionStates;
+    pub use super::AllActionStatesDisabledBy;
+
+    pub use super::DisablingActionState;
+    pub use super::ActionStateDisabledBy;
+
+    pub use super::DisablingActions;
+    pub use super::ActionsDisabledBy;
 }

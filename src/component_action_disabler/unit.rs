@@ -1,4 +1,10 @@
-use bevy::prelude::*;
+use bevy::ecs::{
+    world::DeferredWorld,
+    component::HookContext,
+};
+use bevy::prelude::{Component, Reflect, With, World};
+
+use crate::{Serialize, Deserialize, Actionlike, ActionState};
 
 /// A unit component that will cause any ActionStates on the same entity to behave as though they
 /// are disabled. This will override a manually set [`ActionState::disabled`].
@@ -34,11 +40,14 @@ fn shared_unit_insert_handler<A: Actionlike>(world: &mut DeferredWorld, ctx: Hoo
 }
 
 fn shared_unit_remove_handler<A: Actionlike>(world: &mut DeferredWorld, ctx: HookContext) {
-    let (maybe_action_state, maybe_all_action_states_disabled, maybe_action_state_disabled, maybe_actions_disabled)
-        = world.query::<(&mut ActionState::<A>, Option<&AllActionStatesDisabled>, Option<&ActionStateDisabled<A>>, Option<&ActionsDisabled::<A>>), With<ActionState::<A>>>().get(ctx.entity);
-
+    let Some(query_action_state) = world.try_query::<&mut ActionState::<A>>() else {
+        panic!("ActionState not registered to world");
+    };
     // If there's no action state, there's nothing to do
-    let Some(action_state) = maybe_action_state else { return };
+    let Ok(action_state) = query_action_state.get(world, ctx.entity) else { return; };
+
+    let Some(query_unit_disablers)
+        = world.try_query_filtered::<(Option<&AllActionStatesDisabled>, Option<&ActionStateDisabled<A>>, Option<&ActionsDisabled::<A>>), With<ActionState::<A>>>().get(ctx.entity);
 
     // Re-enabling logic has to check component IDs because the remove hook triggers before a
     // comopnent is removed, so the Option query will always return Some for the removed component
@@ -71,4 +80,10 @@ pub fn setup_unit<A: Actionlike>(world: &mut World) {
     // manager is added after a disabling component, the disabling will occur correctly
     world.register_component_hooks::<ActionState<A>>()
         .on_insert(shared_unit_add_handler);
+}
+
+pub mod prelude {
+    pub use super::AllActionStatesDisabled;
+    pub use super::ActionStateDisabled;
+    pub use super::ActionsDisabled;
 }

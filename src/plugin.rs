@@ -23,6 +23,10 @@ use crate::prelude::updating::register_standard_input_kinds;
 use crate::timing::Timing;
 use crate::user_input::*;
 use crate::Actionlike;
+use crate::component_action_disabler::{
+    unit::setup_unit,
+    relationship::setup_relationships,
+};
 
 /// A [`Plugin`] that collects [`ButtonInput`] from disparate sources,
 /// producing an [`ActionState`] that can be conveniently checked
@@ -187,6 +191,9 @@ impl<A: Actionlike + TypePath + bevy::reflect::GetTypeRegistration> Plugin
                     RunFixedMainLoop,
                     swap_to_update::<A>.in_set(RunFixedMainLoopSystem::AfterFixedMainLoop),
                 );
+
+                // Disabling component hooks
+                app.add_systems(Startup, (setup_unit::<A>, setup_relationships::<A>));
             }
             Machine::Server => {
                 app.add_systems(

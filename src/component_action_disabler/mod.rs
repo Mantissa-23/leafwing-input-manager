@@ -5,8 +5,10 @@
 //! ActionStates for an entity. It is intended that you either use these disabling components, or
 //! manually set [`ActionState::disabled`], not both combined.
 
-mod unit;
-mod relationship;
+pub mod unit;
+pub mod relationship;
 
-pub use unit::*;
-pub use relationship::*;
+pub mod prelude {
+    pub use super::unit::prelude::*;
+    pub use super::relationship::prelude::*;
+}

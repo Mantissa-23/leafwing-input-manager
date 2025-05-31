@@ -16,6 +16,7 @@ pub mod axislike;
 pub mod buttonlike;
 pub mod clashing_inputs;
 pub mod common_conditions;
+pub mod component_action_disabler;
 pub mod input_map;
 pub mod input_processing;
 pub mod plugin;
@@ -38,6 +39,7 @@ pub mod prelude {
     pub use crate::input_map::InputMap;
     pub use crate::input_processing::*;
     pub use crate::user_input::*;
+    pub use crate::component_action_disabler::prelude::*;
 
     pub use crate::plugin::InputManagerPlugin;
     pub use crate::Actionlike;
